@@ -7,7 +7,7 @@ import {
   getFirestore, doc, updateDoc, increment, onSnapshot, collection, addDoc, query, orderBy, limit, where 
 } from 'firebase/firestore';
 import { 
-  Home, MessageSquare, BarChart2, Play, ChevronRight, Send, Heart, TrendingUp, MessageCircle, ChevronDown, CheckCircle, User, Target, Award, PlusCircle, Quote, X, ExternalLink, Activity, Info, BookOpen, MapPin, Zap, Bell, Volume2, Newspaper, Users, Medal, ShieldCheck
+  Home, MessageSquare, BarChart2, Play, ChevronRight, Send, Heart, TrendingUp, MessageCircle, ChevronDown, CheckCircle, User, Target, Award, PlusCircle, Quote, X, ExternalLink, Activity, Info, BookOpen, MapPin, Zap, Bell, Volume2, Newspaper, Users, Medal, ShieldCheck, Share2
 } from 'lucide-react';
 
 const firebaseConfig = {
@@ -39,7 +39,7 @@ const marqueeMessages = [
   "Osmaniye'nin Gür Sesi Olmaya Hazırım.",
 ];
 
-const tabOrder = ['home', 'vaatler', 'saha', 'gonullu', 'iletisim'];
+const tabOrder = ['home', 'vaatler', 'medya', 'saha', 'gonullu', 'iletisim'];
 
 const playPopSound = () => {
   if (typeof window === 'undefined') return;
@@ -77,6 +77,8 @@ export default function App() {
   const [sentCategories, setSentCategories] = useState<string[]>([]);
   const [liveMessages, setLiveMessages] = useState<any[]>([]);
   const [showBioModal, setShowBioModal] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageTouchStartX, setImageTouchStartX] = useState<number | null>(null);
   const infoImages = ['/info1.jpg', '/info2.jpg', '/info3.png'];
@@ -159,6 +161,13 @@ export default function App() {
       });
     }
 
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBanner(true);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
     const splashTimer = setTimeout(() => { setIsLoading(false); }, 2500);
     setHasVoted(localStorage.getItem('app_voted_v2') === 'true');
     setHasSupported(localStorage.getItem('app_supported_v2') === 'true');
@@ -189,6 +198,7 @@ export default function App() {
       unsubAuth();
       if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
   }, []);
 
@@ -386,6 +396,34 @@ export default function App() {
       ) : (
         <div className="bg-gradient-to-br from-gray-50 via-gray-100 to-red-50 min-h-screen pb-24 font-sans text-gray-900 select-none overflow-x-hidden text-black" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} onContextMenu={preventActions}>
           
+          {showInstallBanner && (
+            <div className="bg-gray-900 text-white p-4 flex items-center justify-between shadow-2xl relative z-[300] border-b-4 border-red-600 animate-in slide-in-from-top-4">
+              <div className="flex items-center gap-3">
+                <img src="/icon-192.png" className="w-12 h-12 rounded-2xl shadow-lg border-2 border-red-600" alt="App Icon" />
+                <div className="flex flex-col">
+                  <span className="font-black text-[13px] uppercase tracking-wider text-red-500">Enver Erdoğan App</span>
+                  <span className="text-[10px] font-medium opacity-80 mt-0.5">Hızlı Erişim İçin Yükleyin</span>
+                </div>
+              </div>
+              <div className="flex gap-3 items-center">
+                <button 
+                  onClick={async () => {
+                    setShowInstallBanner(false);
+                    if (deferredPrompt) {
+                      deferredPrompt.prompt();
+                      const { outcome } = await deferredPrompt.userChoice;
+                      setDeferredPrompt(null);
+                    }
+                  }} 
+                  className="bg-red-600 text-white px-5 py-2.5 rounded-full font-black text-[11px] uppercase tracking-widest shadow-[0_0_15px_rgba(220,38,38,0.5)] active:scale-95"
+                >
+                  YÜKLE
+                </button>
+                <button onClick={() => setShowInstallBanner(false)} className="text-gray-400 p-1 bg-white/10 rounded-full active:scale-95"><X size={16} /></button>
+              </div>
+            </div>
+          )}
+
           <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[200] transition-all duration-300 ease-in-out transform ${isScrolled ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-12 scale-90 pointer-events-none'}`}>
             <div className="bg-white/95 backdrop-blur-xl shadow-2xl px-8 py-3 rounded-full border border-red-100 flex items-center gap-4 w-max">
               <img src="/zafer-logo.png" className="h-6 w-auto flex-shrink-0" alt="Logo" />
@@ -854,6 +892,46 @@ export default function App() {
               </div>
             )}
 
+            {activeTab === 'medya' && (
+              <div className="animate-in fade-in duration-500 bg-gray-950 min-h-screen -mt-16 pt-20 pb-24 text-white relative">
+                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-red-600/20 to-transparent pointer-events-none"></div>
+                <h2 className="font-black text-2xl uppercase italic text-center mb-8 border-b-4 border-red-600 inline-block w-full max-w-xs pb-2 drop-shadow-md mx-auto flex justify-center">VİDEO GALERİSİ</h2>
+                <div className="flex flex-col items-center gap-8 px-4 h-[75vh] overflow-y-auto snap-y snap-mandatory hide-scrollbar">
+                  {[1, 2, 3].map((vid) => (
+                    <div key={vid} className="relative w-full max-w-md aspect-[9/16] bg-black rounded-[3rem] overflow-hidden shadow-2xl border border-white/10 snap-center shrink-0">
+                      {/* Video Placeholder Background */}
+                      <div className="absolute inset-0 bg-[url('/info2.jpg')] bg-cover bg-center opacity-40"></div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                         <div className="w-20 h-20 bg-red-600/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(220,38,38,0.6)] cursor-pointer hover:scale-110 active:scale-95 transition-all">
+                           <Play size={36} className="text-white ml-2" fill="white" />
+                         </div>
+                      </div>
+                      
+                      {/* Video Overlay Details */}
+                      <div className="absolute bottom-0 left-0 right-0 p-6 pt-20 bg-gradient-to-t from-black via-black/80 to-transparent">
+                        <div className="flex items-center gap-3 mb-3">
+                          <img src="/enver-profil.png" className="w-10 h-10 rounded-full border-2 border-red-600 object-cover bg-white" />
+                          <div className="flex flex-col">
+                            <span className="font-black text-sm tracking-wide">@envererdogan</span>
+                            <span className="text-[10px] text-gray-400 font-bold uppercase">Osmaniye</span>
+                          </div>
+                        </div>
+                        <p className="text-sm font-medium leading-relaxed opacity-90">Osmaniye'nin bereketli toprakları için sözümüz var! Kadirli, Düziçi, Bahçe... <span className="font-black text-red-400">#osmaniye #zaferpartisi #envererdogan</span></p>
+                      </div>
+                      
+                      {/* Action Buttons Right Side */}
+                      <div className="absolute right-4 bottom-24 flex flex-col items-center gap-6">
+                        <button className="flex flex-col items-center gap-1 hover:scale-110 transition group"><div className="p-3 bg-black/40 rounded-full backdrop-blur-sm group-hover:bg-red-600/40"><Heart size={26} className="text-white" /></div><span className="text-[10px] font-black drop-shadow-md">12.4B</span></button>
+                        <button className="flex flex-col items-center gap-1 hover:scale-110 transition group"><div className="p-3 bg-black/40 rounded-full backdrop-blur-sm group-hover:bg-blue-600/40"><MessageCircle size={26} className="text-white" /></div><span className="text-[10px] font-black drop-shadow-md">342</span></button>
+                        <button className="flex flex-col items-center gap-1 hover:scale-110 transition group"><div className="p-3 bg-black/40 rounded-full backdrop-blur-sm group-hover:bg-green-600/40"><Share2 size={26} className="text-white" /></div><span className="text-[10px] font-black drop-shadow-md">Paylaş</span></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-center text-[10px] font-bold text-gray-500 mt-4 uppercase tracking-widest animate-pulse">Kaydırarak İzleyin</p>
+              </div>
+            )}
+
             {activeTab === 'iletisim' && (
               <div className="p-4 animate-in fade-in duration-500 text-black">
                 <h2 className="font-black text-2xl uppercase italic text-center mb-6">SÖZÜM VAR</h2>
@@ -868,8 +946,8 @@ export default function App() {
 
           <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 flex justify-around items-center h-20 z-[150] px-4 shadow-xl">
             {tabOrder.map((id) => {
-              const icons: any = { home: Home, vaatler: TrendingUp, saha: Target, gonullu: Users, iletisim: MessageSquare };
-              const labels: any = { home: 'ANA SAYFA', vaatler: 'VİZYON', saha: 'SAHA RAPORU', gonullu: "ENVER'LE ZAFERE", iletisim: 'SÖZÜM VAR' };
+              const icons: any = { home: Home, vaatler: TrendingUp, medya: Play, saha: Target, gonullu: Users, iletisim: MessageSquare };
+              const labels: any = { home: 'ANA SAYFA', vaatler: 'VİZYON', medya: 'MEDYA', saha: 'SAHA RAPORU', gonullu: "ENVER'LE ZAFERE", iletisim: 'SÖZÜM VAR' };
               const Icon = icons[id];
               return (
                 <button key={id} onClick={() => {
@@ -942,19 +1020,54 @@ export default function App() {
       )}
 
       {showBioModal && (
-        <div className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm p-6 flex items-center justify-center text-black">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-[3rem] p-8 shadow-2xl w-full max-w-lg relative text-left border border-white/50 border-t-8 border-red-600">
-            <div className="flex items-center justify-between border-b-2 border-red-100 pb-4 mb-6">
-              <h2 className="font-black text-2xl uppercase italic text-red-600 tracking-tight">ENVER ERDOĞAN KİMDİR?</h2>
-              <button onClick={() => speakText("Ben Enver Erdoğan; Osmaniye’nin bereketli topraklarında doğmuş, köklerine sadık, dallarını ise evrensel bilgiyle yeşertmiş bir akademisyen ve hemşehrinizim. Uzun yıllar felsefe, sanat ve çağdaş kültür üzerine yürüttüğüm akademik çalışmalarla, sadece düşünmeyi değil, doğruyu inşa etmeyi ilke edindim. Osmaniye’nin tarihine sadık, bugününe sahip çıkan ve hak ettiği o modern, güvenli, müreffeh geleceği bizzat inşa etmeye muktedir bir iradeyle huzurunuzdayım.")} className="w-12 h-12 bg-red-50 text-red-600 rounded-full flex flex-shrink-0 items-center justify-center shadow-md active:scale-95 transition-transform"><Volume2 size={24}/></button>
+        <div className="fixed inset-0 z-[2000] bg-gray-950 flex flex-col text-white animate-in slide-in-from-bottom-full duration-500 overflow-y-auto">
+          {/* Header/Cover Image Section */}
+          <div className="relative w-full h-[45vh] shrink-0">
+            <img src="/enver-kapak.png" className="w-full h-full object-cover opacity-60 mix-blend-overlay" />
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent"></div>
+            <button onClick={() => setShowBioModal(false)} className="absolute top-6 right-6 w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-red-600 transition-colors z-[2010]"><X size={24} /></button>
+            <div className="absolute bottom-6 left-6 right-6">
+              <span className="bg-red-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest mb-3 inline-block shadow-lg">Biyografi & Vizyon</span>
+              <h2 className="font-black text-4xl uppercase italic tracking-tighter leading-none mb-2">Enver<br/><span className="text-red-500">Erdoğan</span></h2>
+              <p className="text-sm font-bold text-gray-300">Akademisyen, Düşünür & Zafer Partisi Osmaniye Milletvekili Aday Adayı</p>
             </div>
-            <div className="max-h-[60vh] overflow-y-auto pr-2 text-gray-800 space-y-4">
-              <p className="text-[15px] leading-relaxed font-bold border-l-4 border-red-600 pl-3">Ben Enver Erdoğan; Osmaniye’nin bereketli topraklarında doğmuş, köklerine sadık, dallarını ise evrensel bilgiyle yeşertmiş bir akademisyen ve hemşehrinizim.</p>
-              <p className="text-sm leading-relaxed">Uzun yıllar felsefe, sanat ve çağdaş kültür üzerine yürüttüğüm akademik çalışmalarla, sadece düşünmeyi değil, doğruyu inşa etmeyi ilke edindim. Bugün, bu entelektüel birikimi ve memleket sevgimi, şehrimizin kronikleşmiş sorunlarını akılcı, bilimsel ve milli bir duruşla çözmek için Zafer Partisi çatısı altında siyasete taşıyorum.</p>
-              <p className="text-[15px] leading-relaxed font-black uppercase italic text-gray-900 pt-2">Osmaniye’nin tarihine sadık, bugününe sahip çıkan ve hak ettiği o modern, güvenli, müreffeh geleceği bizzat inşa etmeye muktedir bir iradeyle huzurunuzdayım.</p>
-              <p className="text-sm leading-relaxed font-medium bg-red-50 p-4 rounded-2xl border border-red-100 italic">Ben; bu kadim şehrin dününe bilimle vakıf, bugününe vatan sevdasıyla dertli, yarınına ise sarsılmaz bir inançla aşık bir evladınız olarak, zafere giden yolu hep birlikte yürümeye kararlıyım!</p>
+          </div>
+
+          {/* Content Section */}
+          <div className="px-6 pb-12 space-y-8 -mt-2 relative z-10">
+            {/* Quote Card */}
+            <div className="bg-gradient-to-br from-red-900/40 to-black p-6 rounded-3xl border border-red-500/30 shadow-[0_10px_30px_rgba(220,38,38,0.15)] relative overflow-hidden">
+              <Quote size={80} className="absolute -top-4 -right-4 text-red-500/10 rotate-12" />
+              <p className="text-lg leading-relaxed font-medium italic relative z-10">"Ben; bu kadim şehrin dününe bilimle vakıf, bugününe vatan sevdasıyla dertli, yarınına ise sarsılmaz bir inançla aşık bir evladınız olarak, zafere giden yolu hep birlikte yürümeye kararlıyım!"</p>
+              <div className="flex justify-end mt-4">
+                <button onClick={() => speakText("Ben; bu kadim şehrin dününe bilimle vakıf, bugününe vatan sevdasıyla dertli, yarınına ise sarsılmaz bir inançla aşık bir evladınız olarak, zafere giden yolu hep birlikte yürümeye kararlıyım!")} className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-xs font-bold hover:bg-red-600 transition-colors">
+                  <Volume2 size={16} /> Sesli Dinle
+                </button>
+              </div>
             </div>
-            <button onClick={() => setShowBioModal(false)} className="mt-6 bg-gray-900 text-white w-full py-5 rounded-full font-black uppercase text-xs active:scale-95 transition-all text-white shadow-lg">KAPAT</button>
+
+            {/* Timeline */}
+            <div className="relative pl-4 border-l-2 border-red-900/50 space-y-8 mt-8">
+              
+              <div className="relative">
+                <div className="absolute -left-[21px] top-1 w-3 h-3 bg-red-600 rounded-full shadow-[0_0_10px_rgba(220,38,38,1)]"></div>
+                <h3 className="font-black text-xl uppercase text-white mb-2 tracking-tight">Kökler ve Başlangıç</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">Osmaniye’nin bereketli topraklarında doğmuş, köklerine sadık, dallarını ise evrensel bilgiyle yeşertmiş bir hemşehrinizim. Çukurova'nın o yiğit, çalışkan ve dürüst karakterini her zaman bir madalya gibi göğsümde taşıdım.</p>
+              </div>
+
+              <div className="relative">
+                <div className="absolute -left-[21px] top-1 w-3 h-3 bg-red-600 rounded-full shadow-[0_0_10px_rgba(220,38,38,1)]"></div>
+                <h3 className="font-black text-xl uppercase text-white mb-2 tracking-tight">Akademik İnşa</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">Uzun yıllar felsefe, sanat ve çağdaş kültür üzerine yürüttüğüm akademik çalışmalarla, sadece düşünmeyi değil, doğruyu inşa etmeyi ilke edindim. Üniversite kürsülerinden edindiğim bu evrensel vizyonu, memleketimin gerçekleriyle harmanladım.</p>
+              </div>
+
+              <div className="relative">
+                <div className="absolute -left-[21px] top-1 w-3 h-3 bg-red-600 rounded-full shadow-[0_0_10px_rgba(220,38,38,1)]"></div>
+                <h3 className="font-black text-xl uppercase text-white mb-2 tracking-tight">Siyasi Duruş</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">Bugün, bu entelektüel birikimi ve memleket sevgimi, şehrimizin kronikleşmiş sorunlarını akılcı, bilimsel ve milli bir duruşla çözmek için Zafer Partisi çatısı altında siyasete taşıyorum. Osmaniye’nin tarihine sadık, bugününe sahip çıkan ve o modern geleceği bizzat inşa etmeye muktedir bir iradeyle buradayım.</p>
+              </div>
+
+            </div>
           </div>
         </div>
       )}
