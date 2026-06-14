@@ -166,7 +166,7 @@ export default function App() {
       setDeferredPrompt(e);
       setShowInstallBanner(true);
     };
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    (window as any).addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     const splashTimer = setTimeout(() => { setIsLoading(false); }, 2500);
     setHasVoted(localStorage.getItem('app_voted_v2') === 'true');
@@ -916,7 +916,7 @@ export default function App() {
                             <span className="text-[10px] text-gray-400 font-bold uppercase">Osmaniye</span>
                           </div>
                         </div>
-                        <p className="text-sm font-medium leading-relaxed opacity-90">Osmaniye'nin bereketli toprakları için sözümüz var! Kadirli, Düziçi, Bahçe... <span className="font-black text-red-400">#osmaniye #zaferpartisi #envererdogan</span></p>
+                        <p className="text-sm font-medium leading-relaxed opacity-90">Osmaniye&apos;nin bereketli toprakları için sözümüz var! Kadirli, Düziçi, Bahçe... <span className="font-black text-red-400">#osmaniye #zaferpartisi #envererdogan</span></p>
                       </div>
                       
                       {/* Action Buttons Right Side */}
