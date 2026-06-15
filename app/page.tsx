@@ -302,13 +302,15 @@ export default function App() {
 
   // YENİ: Dijital Meclis Oy İşlemi ve Grafik Güncellemesi
   const handleMeclisVoteSubmit = async (vote: 'evet' | 'hayir') => {
-    if (meclisVote) return;
-    setMeclisVote(vote);
-    setMeclisResults(prev => ({ ...prev, [vote]: prev[vote] + 1 }));
-    localStorage.setItem('app_meclis_vote', vote);
-    
-    // Not: Gerçek veritabanı yapısı kurulduğunda aşağıdaki satır aktif edilebilir.
-    // await updateDoc(doc(db, 'meclis', 'haftanin-onergesi'), { [vote]: increment(1) });
+    try {
+      try { playPopSound(); } catch(e) {}
+      if (meclisVote) return;
+      setMeclisVote(vote);
+      setMeclisResults(prev => ({ ...prev, [vote]: prev[vote] + 1 }));
+      try { localStorage.setItem('app_meclis_vote', vote); } catch(e) {}
+    } catch (err) {
+      console.error("Vote error:", err);
+    }
   };
 
   const handleIdeaSubmit = async (e: React.FormEvent) => {
