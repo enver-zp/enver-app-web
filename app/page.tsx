@@ -7,6 +7,7 @@ import {
   getFirestore, doc, updateDoc, increment, onSnapshot, collection, addDoc, query, orderBy, limit, where 
 } from 'firebase/firestore';
 import { getAnalytics, isSupported, logEvent } from "firebase/analytics";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { 
   Home, MessageSquare, BarChart2, Play, ChevronRight, Send, Heart, TrendingUp, MessageCircle, ChevronDown, CheckCircle, User, Target, Award, PlusCircle, Quote, X, ExternalLink, Activity, Info, BookOpen, MapPin, Zap, Bell, Volume2, Newspaper, Users, Medal, ShieldCheck, Share2
 } from 'lucide-react';
@@ -23,6 +24,7 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 const badWords = [
   "küfür", "hakaret", "salak", "aptal", "gerizekalı", "şerefsiz", "piç", "o.ç", "amk", "sik", "yarak", "göt",
@@ -370,19 +372,83 @@ export default function App() {
 
   const handleSahaSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); 
-    if (!reportDesc.trim()) { alert("Lütfen bir açıklama yazın."); return; }
-    if (!isClean(reportDesc)) { alert("Rapor açıklamanız uygun olmayan kelimeler içeriyor."); return; }
+    if (!reportDesc.trim() && !reportImage) { alert("Lütfen bir açıklama yazın veya fotoğraf/video ekleyin."); return; }
+    if (reportDesc && !isClean(reportDesc)) { alert("Rapor açıklamanız uygun olmayan kelimeler içeriyor."); return; }
     
     setIsUploading(true);
+    setUploadProgress(5);
     try {
-      await addDoc(collection(db, 'saha_raporlari'), { user: user?.uid || 'anonim', aciklama: reportDesc, tarih: new Date().toISOString(), durum: 'inceleniyor' });
+      let mediaUrl = null;
+      let mediaType = null;
+      
+      if (reportImage) {
+        const storageRef = ref(storage, `saha_raporlari_medya/${Date.now()}_${reportImage.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, reportImage);
+        
+        await new Promise<void>((resolve, reject) => {
+          uploadTask.on('state_changed', 
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress(progress);
+            }, 
+            (error) => {
+              console.error("Upload error:", error);
+              reject(error);
+            }, 
+            async () => {
+              mediaUrl = await getDownloadURL(uploadTask.snapshot.ref);
+              mediaType = reportImage.type.startsWith('video') ? 'video' : 'image';
+              resolve();
+            }
+          );
+        });
+      }
+
+      await addDoc(collection(db, 'saha_raporlari'), { 
+        user: user?.uid || 'anonim', 
+        aciklama: reportDesc, 
+        medya: mediaUrl,
+        medyaTipi: mediaType,
+        tarih: new Date().toISOString(), 
+        durum: 'inceleniyor' 
+      });
+      
       setReportDesc(""); 
+      setReportImage(null); 
+      setReportImagePreview(null);
+      setUploadProgress(0);
       alert("Raporunuz başarıyla iletildi. Teşekkür ederiz."); 
       setActiveTab('home');
     } catch (err) { 
+      console.error(err);
       alert("İletim sırasında bir hata oluştu."); 
     } finally { 
       setIsUploading(false); 
+      setUploadProgress(0);
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      
+      if (file.type.startsWith('video')) {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.onloadedmetadata = function() {
+          window.URL.revokeObjectURL(video.src);
+          if (video.duration > 16) { // 1 sn tolerans payı
+            alert("Lütfen 15 saniyeden kısa bir video seçin.");
+            return;
+          }
+          setReportImage(file);
+          setReportImagePreview(URL.createObjectURL(file));
+        }
+        video.src = URL.createObjectURL(file);
+      } else {
+        setReportImage(file);
+        setReportImagePreview(URL.createObjectURL(file));
+      }
     }
   };
 
@@ -481,16 +547,18 @@ export default function App() {
           )}
 
           <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[200] transition-all duration-300 ease-in-out transform ${isScrolled ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-12 scale-90 pointer-events-none'}`}>
-            <div onClick={() => { setActiveTab('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); try{ playPopSound(); }catch(e){} }} className="bg-white/90 backdrop-blur-md px-6 py-3 rounded-full shadow-2xl border border-red-100 flex items-center gap-3 cursor-pointer active:scale-95 transition-all">
-              <Award className="text-red-600 animate-pulse" size={20}/>
-              <span className="font-black text-sm tracking-widest text-black">ENVER'LE ZAFERE</span>
+            <div className="bg-white/95 backdrop-blur-xl shadow-2xl px-8 py-3 rounded-full border border-red-100 flex items-center gap-4 w-max">
+              <img src="/zafer-logo.png" className="h-6 w-auto flex-shrink-0" alt="Logo" />
+              <div className="flex items-center font-marka text-[14px] tracking-tighter uppercase whitespace-nowrap text-black leading-none">
+                  <span className="text-red-600">ENVER</span><span className="text-black">'LE ZAFERE</span>
+              </div>
             </div>
           </div>
 
           <header className="bg-white px-4 h-16 flex items-center justify-between sticky top-0 z-[100] shadow-sm border-b border-gray-100 text-black">
             <div className="flex items-center gap-3">
               <img src="/zafer-logo.png" className="h-8 w-auto" alt="Logo" />
-              <div className="flex items-center font-marka text-lg tracking-tighter uppercase whitespace-nowrap text-black">
+              <div onClick={() => { setActiveTab('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); try{ playPopSound(); }catch(e){} }} className="flex items-center font-marka text-lg tracking-tighter uppercase whitespace-nowrap text-black cursor-pointer active:scale-95 transition-transform">
                   <span className="text-red-600">ENVER</span><span className="text-black">'LE ZAFERE</span>
               </div>
             </div>
@@ -855,10 +923,30 @@ export default function App() {
               <div className="p-4 animate-in slide-in-from-bottom-10 duration-500 pb-20 text-black">
                 <h2 className="font-black text-2xl uppercase italic text-center mb-6 border-b-4 border-red-600 inline-block w-full pb-2">SAHA RAPORU</h2>
                 <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl border-2 border-red-100 space-y-6">
+                  <div className="text-center space-y-2"><p className="text-[10px] font-black text-red-600 uppercase tracking-[0.2em]">Söz Sırası Osmaniyelide</p><p className="text-xs font-bold text-gray-500 uppercase leading-relaxed text-black">Gördüğünüz sorunu fotoğraflayın, <br/> çözümü birlikte inşa edelim.</p></div>
                   <form onSubmit={handleSahaSubmit} className="space-y-4">
-                    <div className="text-center space-y-2"><p className="text-[10px] font-black text-red-600 uppercase tracking-[0.2em]">Söz Sırası Osmaniyelide</p><p className="text-xs font-bold text-gray-500 uppercase leading-relaxed text-black">Gördüğünüz sorunu anlatın, <br/> çözümü birlikte inşa edelim.</p></div>
+                    <div className="relative w-full h-56 bg-gray-50 border-2 border-dashed border-gray-200 rounded-[2.5rem] flex flex-col items-center justify-center overflow-hidden active:scale-[0.98] transition-all">
+                      <input type="file" accept="image/*,video/*" capture="environment" onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                      {reportImagePreview ? (
+                        reportImage?.type.startsWith('video') ? (
+                          <video src={reportImagePreview} className="w-full h-full object-cover opacity-90" autoPlay loop muted playsInline />
+                        ) : (
+                          <img src={reportImagePreview} alt="Önizleme" className="w-full h-full object-cover opacity-90" />
+                        )
+                      ) : (
+                        <div className="flex flex-col items-center text-gray-400 text-center"><PlusCircle size={32} className="text-red-600 mb-2" /><span className="text-[10px] font-black uppercase tracking-widest px-4 text-black">FOTOĞRAF / VİDEO ÇEK</span></div>
+                      )}
+                      {reportImagePreview && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                            <span className="text-white font-black text-xs uppercase tracking-widest">Değiştir</span>
+                        </div>
+                      )}
+                    </div>
                     <textarea value={reportDesc} onChange={(e) => setReportDesc(e.target.value)} placeholder="Sorunun yeri ve durumu hakkında kısa bilgi verin..." className="w-full bg-gray-50 border-2 border-gray-100 rounded-[2rem] p-6 text-sm font-bold focus:border-red-600 outline-none min-h-[150px] transition-all text-black" />
-                    <button disabled={isUploading} type="submit" className={`w-full py-5 rounded-[2rem] font-black uppercase text-sm tracking-widest transition-all shadow-xl ${isUploading ? 'bg-gray-400' : 'bg-red-600 text-white active:scale-95 shadow-red-900/20'}`}>{isUploading ? "RAPOR İLETİLİYOR..." : "SAHA RAPORUNU GÖNDER"}</button>
+                    <button disabled={isUploading} type="submit" className={`w-full py-5 rounded-[2rem] font-black uppercase text-sm tracking-widest transition-all shadow-xl relative overflow-hidden ${isUploading ? 'bg-gray-800 text-white' : 'bg-red-600 text-white active:scale-95 shadow-red-900/20'}`}>
+                      {isUploading && <div className="absolute left-0 top-0 bottom-0 bg-red-600 transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>}
+                      <span className="relative z-10">{isUploading ? `YÜKLENİYOR... %${Math.round(uploadProgress)}` : "SAHA RAPORUNU GÖNDER"}</span>
+                    </button>
                   </form>
                 </div>
               </div>
