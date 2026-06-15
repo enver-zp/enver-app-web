@@ -702,14 +702,7 @@ export default function App() {
                             )) : <p className="text-[10px] text-gray-400 italic text-center">Yorumlar onay sonrası burada görünecek...</p>}
                         </div>
                     </div>
-                  
-                  <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-xl border border-white/20 text-center relative overflow-hidden w-full max-w-lg text-black">
-                    <h3 className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em] mb-2">Bu Vizyonu Destekleyen Hemşehrimiz</h3>
-                    <div className="text-7xl font-black text-red-600 mb-6 tracking-tighter drop-shadow-lg">{supportCount.toLocaleString()}</div>
-                    <button disabled={hasSupported} onClick={handleSupportClick} className={`w-full py-5 rounded-2xl font-black uppercase flex items-center justify-center gap-3 transition-all shadow-xl ${hasSupported ? 'bg-green-600 text-white' : 'bg-red-600 text-white active:scale-95'}`}>
-                      {hasSupported ? "Vizyonu Desteklediniz" : "Vizyonu Destekliyorum"}
-                    </button>
-                  </div>
+
                 </div>
 
                 <div className="my-6 bg-red-600 py-3 text-white overflow-hidden shadow-inner relative z-10 text-white w-full max-w-lg mx-auto">
