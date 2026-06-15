@@ -780,9 +780,9 @@ export default function App() {
                           <p className="text-xs text-gray-400 mb-6 leading-relaxed">
                             Meclis'te bu konuda bir kanun teklifi verilse, Osmaniye'nin çıkarı için oyunuz ne olurdu?
                           </p>
-                          <div className="grid grid-cols-2 gap-4">
-                            <button onClick={() => handleMeclisVoteSubmit('evet')} className="py-4 rounded-2xl font-black uppercase text-xs transition-all bg-white/10 text-white border border-white/20 active:scale-95">Kabul</button>
-                            <button onClick={() => handleMeclisVoteSubmit('hayir')} className="py-4 rounded-2xl font-black uppercase text-xs transition-all bg-white/10 text-white border border-white/20 active:scale-95">Red</button>
+                          <div className="grid grid-cols-2 gap-4 relative z-[100]">
+                            <button type="button" onPointerDown={(e) => { e.stopPropagation(); handleMeclisVoteSubmit('evet'); }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMeclisVoteSubmit('evet'); }} className="py-4 rounded-2xl font-black uppercase text-xs transition-all bg-white/10 text-white border border-white/20 active:scale-95 cursor-pointer pointer-events-auto">Kabul</button>
+                            <button type="button" onPointerDown={(e) => { e.stopPropagation(); handleMeclisVoteSubmit('hayir'); }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMeclisVoteSubmit('hayir'); }} className="py-4 rounded-2xl font-black uppercase text-xs transition-all bg-white/10 text-white border border-white/20 active:scale-95 cursor-pointer pointer-events-auto">Red</button>
                           </div>
                         </>
                       )}
