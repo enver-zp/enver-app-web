@@ -303,6 +303,7 @@ export default function App() {
   // YENİ: Dijital Meclis Oy İşlemi ve Grafik Güncellemesi
   const handleMeclisVoteSubmit = async (vote: 'evet' | 'hayir') => {
     try {
+      alert("Sistem oyu aldı: " + vote);
       try { playPopSound(); } catch(e) {}
       if (meclisVote) return;
       setMeclisVote(vote);
