@@ -230,6 +230,37 @@ export default function App() {
     touchStartY.current = null; touchEndY.current = null;
   };
 
+  // --- YENİ: Geri Tuşu (PopState) Yöneticisi ---
+  const prevStateRef = useRef({ activeTab: 'home', selectedImage: null as any, showBioModal: false, showGoalsModal: false, selectedCategory: null as any, selectedDistrict: null as any });
+  useEffect(() => {
+    const current = { activeTab, selectedImage, showBioModal, showGoalsModal, selectedCategory, selectedDistrict };
+    const prev = prevStateRef.current;
+    const openedTab = prev.activeTab === 'home' && current.activeTab !== 'home';
+    const openedImage = !prev.selectedImage && !!current.selectedImage;
+    const openedBio = !prev.showBioModal && current.showBioModal;
+    const openedGoals = !prev.showGoalsModal && current.showGoalsModal;
+    const openedCategory = !prev.selectedCategory && !!current.selectedCategory;
+    const openedDistrict = !prev.selectedDistrict && !!current.selectedDistrict;
+    
+    if (openedTab || openedImage || openedBio || openedGoals || openedCategory || openedDistrict) {
+      window.history.pushState({ modal: true }, '');
+    }
+    prevStateRef.current = current;
+  }, [activeTab, selectedImage, showBioModal, showGoalsModal, selectedCategory, selectedDistrict]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (selectedImage) { setSelectedImage(null); return; }
+      if (showBioModal) { setShowBioModal(false); return; }
+      if (showGoalsModal) { setShowGoalsModal(false); return; }
+      if (selectedCategory) { setSelectedCategory(null); return; }
+      if (selectedDistrict) { setSelectedDistrict(null); return; }
+      if (activeTab !== 'home') { setActiveTab('home'); return; }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [selectedImage, showBioModal, showGoalsModal, selectedCategory, selectedDistrict, activeTab]);
+
   useEffect(() => {
     if (!user) return;
     const unsubDestekler = onSnapshot(doc(db, 'destekler', 'mobil-sayac-v2'), (s) => s.exists() && setSupportCount(s.data().count || 0));
@@ -604,9 +635,12 @@ export default function App() {
                                         key={img}
                                         className={`absolute ${isFront ? 'w-[75%] h-72' : 'w-[70%] h-64'} rounded-3xl overflow-hidden shadow-2xl border-4 border-white cursor-pointer transition-all duration-500 ${transformClass} ${zIndex}`}
                                         onClick={() => {
-                                            setSelectedImage(img);
-                                            setFrontCardIndex(idx);
-                                            try { playPopSound(); } catch(e){}
+                                            if (isFront) {
+                                                setSelectedImage(img);
+                                                try { playPopSound(); } catch(e){}
+                                            } else {
+                                                setFrontCardIndex(idx);
+                                            }
                                         }}
                                     >
                                         <img src={img} alt={titles[idx]} className="w-full h-full object-cover object-top" />
@@ -899,6 +933,15 @@ export default function App() {
                 <div className="flex flex-col items-center gap-8 px-4 h-[75vh] overflow-y-auto snap-y snap-mandatory hide-scrollbar">
                   {[1, 2, 3].map((vid) => (
                     <div key={vid} className="relative w-full max-w-md aspect-[9/16] bg-black rounded-[3rem] overflow-hidden shadow-2xl border border-white/10 snap-center shrink-0">
+                      
+                      {/* Floating Watermark in Media Tab */}
+                      <div onClick={handleWatermarkClick} className="absolute top-4 right-4 bg-gray-950/80 backdrop-blur-sm px-3.5 py-1.5 rounded-full flex items-center gap-2 shadow-2xl border border-white/10 cursor-pointer active:scale-95 transition-all z-50 clickable-img">
+                        <img src="/zafer-logo.png" className="h-4 w-auto no-drag" alt="Zafer" />
+                        <div className="flex flex-col text-left text-white">
+                          <span className="font-marka text-[11px] tracking-tight uppercase leading-tight"><span className="text-red-500">ENVER</span><span className="text-white"> ERDOĞAN</span></span>
+                        </div>
+                      </div>
+
                       {/* Video Placeholder Background */}
                       <div className="absolute inset-0 bg-[url('/info2.jpg')] bg-cover bg-center opacity-40"></div>
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -986,13 +1029,13 @@ export default function App() {
           {selectedImage.includes('/info') && (
             <>
               <button 
-                onClick={(e) => { e.stopPropagation(); navigateImage(-1); }}
+                onClick={(e) => { e.stopPropagation(); try { playPopSound(); } catch(e){} navigateImage(-1); }}
                 className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-red-600 transition-colors z-[2020]"
               >
                 <ChevronRight size={32} className="rotate-180" />
               </button>
               <button 
-                onClick={(e) => { e.stopPropagation(); navigateImage(1); }}
+                onClick={(e) => { e.stopPropagation(); try { playPopSound(); } catch(e){} navigateImage(1); }}
                 className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-red-600 transition-colors z-[2020]"
               >
                 <ChevronRight size={32} />
