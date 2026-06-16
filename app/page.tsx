@@ -211,7 +211,7 @@ export default function App() {
     };
     (window as any).addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    const splashTimer = setTimeout(() => { setIsLoading(false); }, 2500);
+    const splashTimer = setTimeout(() => { setIsLoading(false); }, 3000);
     setHasVoted(localStorage.getItem('app_voted_v2') === 'true');
     setHasSupported(localStorage.getItem('app_supported_v2') === 'true');
     const savedCats = localStorage.getItem('app_sent_categories');
@@ -518,17 +518,27 @@ export default function App() {
           45% { transform: scale(1.2) translateY(-10px); opacity: 0; }
           100% { opacity: 0; }
         }
+        @keyframes swellAndCover {
+          0% { transform: scale(0.9); opacity: 0; }
+          10% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.1); opacity: 1; }
+          85% { transform: scale(1.15); opacity: 1; } /* 3 saniyenin son 0.5 saniyesine (yaklaşık %83-100 aralığına denk gelir) kadar bekler */
+          100% { transform: scale(25); opacity: 0; } /* son anda ekranı kaplayarak kaybolur */
+        }
+        .animate-swell-cover {
+          animation: swellAndCover 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
       `}</style>
 
       {isLoading ? (
-        <div className="fixed inset-0 z-[999] bg-white flex flex-col items-center justify-center text-black overflow-hidden">
+        <div className="fixed inset-0 z-[999] bg-white flex flex-col items-center justify-center text-black overflow-hidden animate-out fade-out duration-500 delay-[2500ms] fill-mode-forwards pointer-events-none">
             <div className="relative flex flex-col items-center justify-center w-full">
                 {/* Dev arka plan gölge mührü */}
                 <img src="/zafer-muhur.png" className="w-[150vw] h-[150vw] md:w-[100vh] md:h-[100vh] max-w-none object-contain animate-pulse opacity-5 absolute" alt="Mühür Arka Plan" />
-                {/* Ana büyük mühür */}
-                <img src="/zafer-muhur.png" className="w-[85vw] h-[85vw] md:w-[50vh] md:h-[50vh] object-contain animate-[pulse_2s_infinite] relative z-10 drop-shadow-[0_20px_50px_rgba(220,38,38,0.2)]" alt="Mühür" />
+                {/* Ana büyük mühür (Yeni animasyon eklendi) */}
+                <img src="/zafer-muhur.png" className="w-[85vw] h-[85vw] md:w-[50vh] md:h-[50vh] object-contain animate-swell-cover relative z-10 drop-shadow-[0_20px_50px_rgba(220,38,38,0.2)]" alt="Mühür" />
             </div>
-            <span className="font-black text-red-600 tracking-[0.4em] uppercase text-2xl italic mt-16 relative z-10 text-center">ENVER'LE<br/>ZAFERE</span>
+            <span className="font-black text-red-600 tracking-[0.4em] uppercase text-2xl italic mt-16 relative z-10 text-center animate-out fade-out duration-300 delay-[2500ms] fill-mode-forwards">ENVER'LE<br/>ZAFERE</span>
         </div>
       ) : (
         <div className="bg-gradient-to-br from-gray-50 via-gray-100 to-red-50 min-h-screen pb-24 font-sans text-gray-900 select-none overflow-x-hidden text-black" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} onContextMenu={preventActions}>
@@ -774,7 +784,29 @@ export default function App() {
                         </div>
 
                         {infoImages.length > 0 ? (
-                          <div className="relative h-72 w-full flex justify-center items-center mt-4">
+                          <div 
+                              className="relative h-72 w-full flex justify-center items-center mt-4"
+                              onTouchStart={(e) => {
+                                  e.stopPropagation();
+                                  e.currentTarget.setAttribute('data-touchstart', e.touches[0].clientX.toString());
+                              }}
+                              onTouchEnd={(e) => {
+                                  e.stopPropagation();
+                                  const startStr = e.currentTarget.getAttribute('data-touchstart');
+                                  if (!startStr) return;
+                                  const startX = parseFloat(startStr);
+                                  const endX = e.changedTouches[0].clientX;
+                                  const diff = startX - endX;
+                                  if (Math.abs(diff) > 40) {
+                                      try { playPopSound(); } catch(err){}
+                                      if (diff > 0) {
+                                          setFrontCardIndex((prev) => (prev + 1) % infoImages.length);
+                                      } else {
+                                          setFrontCardIndex((prev) => (prev === 0 ? infoImages.length - 1 : prev - 1));
+                                      }
+                                  }
+                              }}
+                          >
                               {infoImages.map((img, idx) => {
                                 const isFront = frontCardIndex === idx;
                                 const isLeft = (frontCardIndex + 1) % 3 === idx;
@@ -889,7 +921,7 @@ export default function App() {
                       </div>
                       <div className="flex flex-col items-start">
                         <span className="font-black text-[15px] uppercase tracking-widest text-white">BEN KİMİM?</span>
-                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-0.5">Hakkımda Bilinmeyenler</span>
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-0.5">ENVER Erdoğan kimdir?</span>
                       </div>
                     </div>
                     <div className="relative z-10 bg-white/10 p-2.5 rounded-full group-hover:bg-red-600 transition-colors duration-300 shadow-inner">
