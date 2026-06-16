@@ -128,15 +128,21 @@ export default function App() {
   const infoCategories = ['TÜMÜ', 'EĞİTİM', 'EKONOMİ', 'TARIM', 'GÜVENLİK', 'TURİZM', 'SANAYİ', 'KÜLTÜR-SANAT', 'SPOR'];
   const navigateImage = (direction: number) => {
     if (!selectedImage) return;
-    const currentIndex = infoImages.indexOf(selectedImage);
+    
+    let currentGallery = infoImages;
+    if (selectedImage.includes('merkez')) {
+      currentGallery = ['/merkez1.png', '/merkez2.png', '/merkez3.png', '/merkez4.png'];
+    }
+
+    const currentIndex = currentGallery.indexOf(selectedImage);
     if (currentIndex === -1) return;
     
     let newIndex = currentIndex + direction;
-    if (newIndex >= infoImages.length) newIndex = 0;
-    if (newIndex < 0) newIndex = infoImages.length - 1;
+    if (newIndex >= currentGallery.length) newIndex = 0;
+    if (newIndex < 0) newIndex = currentGallery.length - 1;
     
-    setSelectedImage(infoImages[newIndex]);
-    setFrontCardIndex(newIndex);
+    setSelectedImage(currentGallery[newIndex]);
+    if (!selectedImage.includes('merkez')) setFrontCardIndex(newIndex);
     try { new Audio('/pop.mp3').play().catch(()=>console.log('Audio play ignored')); } catch(e){}
   };
 
@@ -706,8 +712,8 @@ export default function App() {
                                 {/* Etkileşimli İlçe Pinleri (Harita Üzerine Tam Konumlandırılmış) */}
                                 <div className="absolute inset-0 z-10 pointer-events-none">
                                   {/* Merkez */}
-                                  <button style={{ top: '55%', left: '48%' }} className="absolute pointer-events-auto group transform -translate-x-1/2 -translate-y-1/2" onClick={() => { try { playPopSound(); } catch(e){} setSelectedDistrict({ id: 'merkez', name: 'MERKEZ', icon: '🏙️', solution: 'Şehir merkezi kentsel dönüşüm ile yenilenecek.' }) }}>
-                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all shadow-xl border-2 border-white ${selectedDistrict?.id === 'merkez' ? 'bg-red-600 scale-125 z-20' : 'bg-black group-hover:bg-red-500'}`}>
+                                  <button style={{ top: '55%', left: '48%' }} className="absolute pointer-events-auto group transform -translate-x-1/2 -translate-y-1/2" onClick={() => { try { playPopSound(); } catch(e){} setSelectedImage('/merkez1.png'); }}>
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all shadow-xl border-2 border-white ${selectedImage?.includes('merkez') ? 'bg-red-600 scale-125 z-20' : 'bg-black group-hover:bg-red-500'}`}>
                                       <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                                     </div>
                                     <span className="absolute top-7 left-1/2 transform -translate-x-1/2 text-[10px] font-black text-black bg-white/90 px-2 py-0.5 rounded shadow-sm border border-gray-200">MERKEZ</span>
@@ -1163,7 +1169,7 @@ export default function App() {
         >
           <button className="absolute top-6 right-6 text-white hover:text-red-500 bg-white/10 p-3 rounded-full shadow-xl z-[2010]"><X size={28} /></button>
           
-          {selectedImage.includes('/info') && (
+          {(selectedImage.includes('/info') || selectedImage.includes('merkez')) && (
             <>
               <button 
                 onClick={(e) => { e.stopPropagation(); try { playPopSound(); } catch(e){} navigateImage(-1); }}
@@ -1182,16 +1188,16 @@ export default function App() {
 
           <div className="relative w-full max-w-4xl max-h-[85vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
             <img src={selectedImage} className="max-w-full max-h-full object-contain rounded-3xl shadow-2xl border-4 border-white/20 clickable-img" onContextMenu={preventActions} onDragStart={preventActions} alt="Lightbox" />
-            {(!selectedImage.includes('/info')) && (
+            {(!selectedImage.includes('/info') && !selectedImage.includes('merkez')) && (
                 <div onClick={handleWatermarkClick} className="absolute bottom-3 right-3 bg-gray-950/95 backdrop-blur-sm px-3.5 py-1.5 rounded-full flex items-center gap-2 shadow-2xl border border-white/10 cursor-pointer active:scale-95 transition-all clickable-img">
                     <img src="/zafer-logo.png" className="h-4 w-auto no-drag" alt="Zafer" /><div className="flex flex-col text-left text-white"><span className="font-marka text-[11px] tracking-tight uppercase leading-tight"><span className="text-red-500">ENVER</span><span className="text-white"> ERDOĞAN</span></span><span className="text-white/80 text-[7px] font-black uppercase whitespace-nowrap">Zafer Partisi Osmaniye Milletvekili Aday Adayı</span></div><ExternalLink size={10} className="text-white/30 ml-1 text-white" />
                 </div>
             )}
           </div>
           
-          {selectedImage.includes('/info') && (
+          {(selectedImage.includes('/info') || selectedImage.includes('merkez')) && (
             <div className="absolute bottom-6 flex gap-2 z-[2010]">
-                {infoImages.map((img, idx) => (
+                {(selectedImage.includes('merkez') ? ['/merkez1.png', '/merkez2.png', '/merkez3.png', '/merkez4.png'] : infoImages).map((img, idx) => (
                     <div key={idx} className={`w-2 h-2 rounded-full transition-all ${selectedImage === img ? 'bg-red-500 w-6' : 'bg-white/30'}`}></div>
                 ))}
             </div>
