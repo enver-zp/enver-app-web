@@ -712,8 +712,8 @@ export default function App() {
                                 {/* Etkileşimli İlçe Pinleri (Harita Üzerine Tam Konumlandırılmış) */}
                                 <div className="absolute inset-0 z-10 pointer-events-none">
                                   {/* Merkez */}
-                                  <button style={{ top: '55%', left: '48%' }} className="absolute pointer-events-auto group transform -translate-x-1/2 -translate-y-1/2" onClick={() => { try { playPopSound(); } catch(e){} setSelectedImage('/merkez1.png'); }}>
-                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all shadow-xl border-2 border-white ${selectedImage?.includes('merkez') ? 'bg-red-600 scale-125 z-20' : 'bg-black group-hover:bg-red-500'}`}>
+                                  <button style={{ top: '55%', left: '48%' }} className="absolute pointer-events-auto group transform -translate-x-1/2 -translate-y-1/2" onClick={() => { try { playPopSound(); } catch(e){} setSelectedDistrict({ id: 'merkez', name: 'MERKEZ', icon: '🏙️', solution: 'Şehir merkezi kentsel dönüşüm ile yenilenecek.' }) }}>
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all shadow-xl border-2 border-white ${selectedDistrict?.id === 'merkez' ? 'bg-red-600 scale-125 z-20' : 'bg-black group-hover:bg-red-500'}`}>
                                       <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                                     </div>
                                     <span className="absolute top-7 left-1/2 transform -translate-x-1/2 text-[10px] font-black text-black bg-white/90 px-2 py-0.5 rounded shadow-sm border border-gray-200">MERKEZ</span>
@@ -760,6 +760,16 @@ export default function App() {
                                 </div>
                                 <h4 className="font-black text-lg uppercase text-red-600 mb-2">{selectedDistrict.name} İÇİN VİZYON</h4>
                                 <p className="text-sm font-bold text-gray-800 mb-4">{selectedDistrict.solution}</p>
+
+                                {selectedDistrict.id === 'merkez' && (
+                                    <button 
+                                      onClick={() => { try { playPopSound(); } catch(e){} setSelectedImage('/merkez1.png'); }} 
+                                      className="w-full bg-red-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all mb-4 border border-red-500"
+                                    >
+                                      <Play size={16} fill="white" />
+                                      MERKEZ İNFOGRAFİKLERİNİ İNCELE
+                                    </button>
+                                )}
                                 
                                 {/* YENİ: İlçeye Özel Saha Raporu Butonu */}
                                 <button 
