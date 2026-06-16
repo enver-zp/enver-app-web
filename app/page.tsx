@@ -9,7 +9,7 @@ import {
 import { getAnalytics, isSupported, logEvent } from "firebase/analytics";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { 
-  Home, MessageSquare, BarChart2, Play, ChevronRight, Send, Heart, TrendingUp, MessageCircle, ChevronDown, CheckCircle, User, Target, Award, PlusCircle, Quote, X, ExternalLink, Activity, Info, BookOpen, MapPin, Zap, Bell, Volume2, Newspaper, Users, Medal, ShieldCheck, Share2
+  Home, MessageSquare, BarChart2, Play, ChevronRight, Send, Heart, TrendingUp, MessageCircle, ChevronDown, CheckCircle, User, Target, Award, PlusCircle, Quote, X, ExternalLink, Activity, Info, BookOpen, MapPin, Zap, Bell, Volume2, Newspaper, Users, Medal, ShieldCheck, Share2, ArrowRight
 } from 'lucide-react';
 
 const firebaseConfig = {
@@ -47,7 +47,7 @@ const marqueeMessages = [
   "Osmaniye'nin Gür Sesi Olmaya Hazırım.",
 ];
 
-const tabOrder = ['home', 'vaatler', 'medya', 'saha', 'gonullu', 'iletisim'];
+const tabOrder = ['home', 'medya', 'saha', 'gonullu', 'iletisim'];
 
 const playPopSound = () => {
   if (typeof window === 'undefined') return;
@@ -106,9 +106,26 @@ export default function App() {
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageTouchStartX, setImageTouchStartX] = useState<number | null>(null);
-  const infoImages = ['/info1.jpg', '/info2.jpg', '/info3.png'];
   const [frontCardIndex, setFrontCardIndex] = useState(0);
 
+  const [infographicCategory, setInfographicCategory] = useState<string>('TÜMÜ');
+  
+  const allInfoImages = [
+    { src: '/info1.jpg', category: 'EĞİTİM' },
+    { src: '/info2.jpg', category: 'EKONOMİ' },
+    { src: '/info3.png', category: 'TARIM' },
+    { src: '/info1.jpg', category: 'GÜVENLİK' },
+    { src: '/info2.jpg', category: 'TURİZM' },
+    { src: '/info3.png', category: 'SANAYİ' },
+    { src: '/info1.jpg', category: 'KÜLTÜR-SANAT' },
+    { src: '/info2.jpg', category: 'SPOR' }
+  ];
+  
+  const infoImages = infographicCategory === 'TÜMÜ' 
+    ? allInfoImages.map(i => i.src)
+    : allInfoImages.filter(i => i.category === infographicCategory).map(i => i.src);
+
+  const infoCategories = ['TÜMÜ', 'EĞİTİM', 'EKONOMİ', 'TARIM', 'GÜVENLİK', 'TURİZM', 'SANAYİ', 'KÜLTÜR-SANAT', 'SPOR'];
   const navigateImage = (direction: number) => {
     if (!selectedImage) return;
     const currentIndex = infoImages.indexOf(selectedImage);
@@ -486,34 +503,32 @@ export default function App() {
 
   return (
     <>
-      <head>
-        <title>ENVER Erdoğan | Osmaniye</title>
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
-        <meta name="google" content="notranslate" />
-        <style>{`
-          @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-          .animate-marquee { display: flex; width: fit-content; animation: marquee 30s linear infinite; }
-          .font-marka { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 900; }
-          img, video { -webkit-touch-callout: none !important; -webkit-user-select: none !important; user-select: none !important; }
-          img:not(.clickable-img) { pointer-events: none; }
-          .clickable-img { pointer-events: auto !important; }
-          @keyframes stampHit {
-            0% { transform: scale(3) translateY(-30px); opacity: 0; }
-            10% { transform: scale(3) translateY(-30px); opacity: 1; }
-            15% { transform: scale(1) translateY(0); opacity: 1; }
-            40% { transform: scale(1) translateY(0); opacity: 1; }
-            45% { transform: scale(1.2) translateY(-10px); opacity: 0; }
-            100% { opacity: 0; }
-          }
-        `}</style>
-      </head>
+      <style>{`
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .animate-marquee { display: flex; width: fit-content; animation: marquee 30s linear infinite; }
+        .font-marka { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 900; }
+        img, video { -webkit-touch-callout: none !important; -webkit-user-select: none !important; user-select: none !important; }
+        img:not(.clickable-img) { pointer-events: none; }
+        .clickable-img { pointer-events: auto !important; }
+        @keyframes stampHit {
+          0% { transform: scale(3) translateY(-30px); opacity: 0; }
+          10% { transform: scale(3) translateY(-30px); opacity: 1; }
+          15% { transform: scale(1) translateY(0); opacity: 1; }
+          40% { transform: scale(1) translateY(0); opacity: 1; }
+          45% { transform: scale(1.2) translateY(-10px); opacity: 0; }
+          100% { opacity: 0; }
+        }
+      `}</style>
 
       {isLoading ? (
-        <div className="fixed inset-0 z-[999] bg-white flex flex-col items-center justify-center text-black">
-            <img src="/zafer-muhur.png" className="w-56 h-56 object-contain animate-pulse" alt="Mühür" />
-            <span className="font-black text-red-600 tracking-[0.3em] uppercase text-xl italic mt-10">ENVER'LE ZAFERE</span>
+        <div className="fixed inset-0 z-[999] bg-white flex flex-col items-center justify-center text-black overflow-hidden">
+            <div className="relative flex flex-col items-center justify-center w-full">
+                {/* Dev arka plan gölge mührü */}
+                <img src="/zafer-muhur.png" className="w-[150vw] h-[150vw] md:w-[100vh] md:h-[100vh] max-w-none object-contain animate-pulse opacity-5 absolute" alt="Mühür Arka Plan" />
+                {/* Ana büyük mühür */}
+                <img src="/zafer-muhur.png" className="w-[85vw] h-[85vw] md:w-[50vh] md:h-[50vh] object-contain animate-[pulse_2s_infinite] relative z-10 drop-shadow-[0_20px_50px_rgba(220,38,38,0.2)]" alt="Mühür" />
+            </div>
+            <span className="font-black text-red-600 tracking-[0.4em] uppercase text-2xl italic mt-16 relative z-10 text-center">ENVER'LE<br/>ZAFERE</span>
         </div>
       ) : (
         <div className="bg-gradient-to-br from-gray-50 via-gray-100 to-red-50 min-h-screen pb-24 font-sans text-gray-900 select-none overflow-x-hidden text-black" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} onContextMenu={preventActions}>
@@ -587,8 +602,56 @@ export default function App() {
 
                 <div className="p-4 mt-2 text-black text-center flex flex-col items-center">
                     
+                    {/* MECLİS MODULE INTEGRATED INTO HOME */}
+                    <div className="w-full max-w-lg bg-gray-900 rounded-[2.5rem] p-8 shadow-2xl border-b-[12px] border-red-600 mb-10 text-white mt-4 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-4 opacity-10"><Award size={100} /></div>
+                      <div className="flex items-center gap-3 mb-4 text-red-500 relative z-10">
+                        <Award size={24} />
+                        <span className="font-black text-[10px] uppercase tracking-widest text-white">Dijital Meclis | Haftanın Önergesi</span>
+                      </div>
+                      <h3 className="font-black text-lg leading-tight mb-4 uppercase relative z-10">Sığınmacıların Şehir Merkezindeki Ticari Faaliyetlerinin Sınırlandırılması</h3>
+                      
+                      {meclisVote ? (
+                        <div className="mt-6 animate-in fade-in relative z-10">
+                          <p className="text-xs text-gray-300 mb-4 leading-relaxed italic">
+                            "Oyunuz kaydedildi. Osmaniye halkının kararı aşağıdadır."
+                          </p>
+                          <div className="space-y-4">
+                            <div>
+                              <div className="flex justify-between text-xs font-black uppercase mb-1">
+                                <span className="text-green-400">Kabul</span>
+                                <span>%{Math.round((meclisResults.evet / (meclisResults.evet + meclisResults.hayir)) * 100)}</span>
+                              </div>
+                              <div className="h-3 w-full bg-white/10 rounded-full overflow-hidden">
+                                <div className="h-full bg-green-500 transition-all duration-1000" style={{ width: `${(meclisResults.evet / (meclisResults.evet + meclisResults.hayir)) * 100}%` }}></div>
+                              </div>
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-xs font-black uppercase mb-1">
+                                <span className="text-red-400">Red</span>
+                                <span>%{Math.round((meclisResults.hayir / (meclisResults.evet + meclisResults.hayir)) * 100)}</span>
+                              </div>
+                              <div className="h-3 w-full bg-white/10 rounded-full overflow-hidden">
+                                <div className="h-full bg-red-500 transition-all duration-1000" style={{ width: `${(meclisResults.hayir / (meclisResults.evet + meclisResults.hayir)) * 100}%` }}></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="relative z-10">
+                          <p className="text-xs text-gray-400 mb-6 leading-relaxed">
+                            Meclis'te bu konuda bir kanun teklifi verilse, Osmaniye'nin çıkarı için oyunuz ne olurdu?
+                          </p>
+                          <div className="grid grid-cols-2 gap-4 relative z-[100]">
+                            <button type="button" onPointerDown={(e) => { e.stopPropagation(); handleMeclisVoteSubmit('evet'); }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMeclisVoteSubmit('evet'); }} className="py-4 rounded-2xl font-black uppercase text-xs transition-all bg-white/10 text-white border border-white/20 active:scale-95 cursor-pointer pointer-events-auto">Kabul</button>
+                            <button type="button" onPointerDown={(e) => { e.stopPropagation(); handleMeclisVoteSubmit('hayir'); }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMeclisVoteSubmit('hayir'); }} className="py-4 rounded-2xl font-black uppercase text-xs transition-all bg-white/10 text-white border border-white/20 active:scale-95 cursor-pointer pointer-events-auto">Red</button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     {/* SÜREKLİ TEKRARLAYAN PUSULA/MÜHÜR ANİMASYONU */}
-                    <div className="w-full max-w-sm mb-12 mt-4 flex flex-col items-center">
+                    <div className="w-full max-w-sm mb-12 flex flex-col items-center">
                         <h2 className="font-black text-xl uppercase italic text-center mb-6 border-b-4 border-red-600 inline-block w-full pb-2">KARARIMIZ NET</h2>
                         
                         {/* Gerçekçi Seçim Pusulası Simülasyonu */}
@@ -702,8 +765,17 @@ export default function App() {
                     <div className="w-full max-w-lg mb-12 text-black text-left mt-6 px-4">
                         <h2 className="font-black text-2xl uppercase italic text-center mb-8 border-b-4 border-red-600 inline-block w-full pb-2">VİZYON İNFOGRAFİKLERİ</h2>
                         
-                        <div className="relative h-72 w-full flex justify-center items-center mt-4">
-                            {infoImages.map((img, idx) => {
+                        <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
+                           {infoCategories.map(cat => (
+                             <button key={cat} onClick={() => { setInfographicCategory(cat); setFrontCardIndex(0); try{ playPopSound(); }catch(e){} }} className={`snap-start whitespace-nowrap px-6 py-3 rounded-full font-black text-[10px] tracking-widest uppercase transition-all shadow-md active:scale-95 border-2 ${infographicCategory === cat ? 'bg-red-600 text-white border-red-600' : 'bg-white text-gray-500 border-gray-100 hover:border-red-200'}`}>
+                               {cat}
+                             </button>
+                           ))}
+                        </div>
+
+                        {infoImages.length > 0 ? (
+                          <div className="relative h-72 w-full flex justify-center items-center mt-4">
+                              {infoImages.map((img, idx) => {
                                 const isFront = frontCardIndex === idx;
                                 const isLeft = (frontCardIndex + 1) % 3 === idx;
                                 
@@ -749,7 +821,12 @@ export default function App() {
                                     </div>
                                 );
                             })}
-                        </div>
+                          </div>
+                        ) : (
+                          <div className="w-full h-40 flex items-center justify-center bg-gray-50 rounded-[2.5rem] border-2 border-dashed border-gray-200 mt-4 mb-4">
+                             <p className="text-xs font-bold text-gray-400">Bu kategoriye ait infografik yakında eklenecek.</p>
+                          </div>
+                        )}
                         <p className="text-center text-[10px] font-bold text-gray-400 mt-8 uppercase tracking-widest animate-pulse">İncelemek için kartlara dokunun</p>
                     </div>
 
@@ -803,121 +880,57 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="p-4 grid grid-cols-2 gap-4 pb-4">
-                  <button onClick={() => setActiveTab('vaatler')} className="bg-white p-6 rounded-[2.5rem] shadow-xl flex flex-col items-center gap-3 active:scale-95 text-black">
-                    <div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg"><TrendingUp size={32} /></div>
-                    <span className="font-black text-xs uppercase">VİZYONUMUZ</span>
+                <div className="px-5 flex flex-col gap-4 pb-8 w-full max-w-lg mx-auto">
+                  <button onClick={() => setShowBioModal(true)} className="relative overflow-hidden bg-gradient-to-r from-gray-900 to-black p-5 rounded-3xl shadow-2xl shadow-black/20 flex items-center justify-between active:scale-95 transition-all group border border-gray-800">
+                    <div className="absolute inset-0 bg-[url('/pattern.png')] opacity-10 mix-blend-overlay"></div>
+                    <div className="flex items-center gap-4 relative z-10">
+                      <div className="bg-red-600/20 p-3.5 rounded-2xl border border-red-500/30 group-hover:scale-110 transition-transform duration-300">
+                        <User size={26} className="text-red-500" />
+                      </div>
+                      <div className="flex flex-col items-start">
+                        <span className="font-black text-[15px] uppercase tracking-widest text-white">BEN KİMİM?</span>
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-0.5">Hakkımda Bilinmeyenler</span>
+                      </div>
+                    </div>
+                    <div className="relative z-10 bg-white/10 p-2.5 rounded-full group-hover:bg-red-600 transition-colors duration-300 shadow-inner">
+                        <ArrowRight size={18} className="text-gray-300 group-hover:text-white" />
+                    </div>
                   </button>
-                  <button onClick={() => setShowBioModal(true)} className="bg-white p-6 rounded-[2.5rem] shadow-xl flex flex-col items-center gap-3 active:scale-95 text-black">
-                    <div className="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg"><User size={32} /></div>
-                    <span className="font-black text-xs uppercase">BEN KİMİM?</span>
+
+                  <button onClick={() => setShowGoalsModal(true)} className="relative overflow-hidden bg-gradient-to-r from-red-600 to-red-800 p-5 rounded-3xl shadow-2xl shadow-red-900/30 flex items-center justify-between active:scale-95 transition-all group border border-red-500">
+                    <div className="absolute inset-0 bg-[url('/pattern.png')] opacity-10 mix-blend-overlay"></div>
+                    <div className="flex items-center gap-4 relative z-10">
+                      <div className="bg-black/20 p-3.5 rounded-2xl border border-black/10 group-hover:scale-110 transition-transform duration-300">
+                        <Target size={26} className="text-white" />
+                      </div>
+                      <div className="flex flex-col items-start">
+                        <span className="font-black text-[15px] uppercase tracking-widest text-white">MECLİS HEDEFLERİM</span>
+                        <span className="text-[11px] font-bold text-red-200 uppercase tracking-[0.2em] mt-0.5">Projeler ve Vaatler</span>
+                      </div>
+                    </div>
+                    <div className="relative z-10 bg-black/15 p-2.5 rounded-full group-hover:bg-white transition-colors duration-300 shadow-inner">
+                        <ArrowRight size={18} className="text-white group-hover:text-red-700" />
+                    </div>
                   </button>
-                  <button onClick={() => setShowGoalsModal(true)} className="bg-white p-6 rounded-[2.5rem] shadow-xl flex flex-col items-center gap-3 active:scale-95 text-black">
-                    <div className="bg-orange-600 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg"><Target size={32} /></div>
-                    <span className="font-black text-xs uppercase">MECLİS HEDEFLERİM</span>
-                  </button>
-                  <button onClick={() => setActiveTab('iletisim')} className="bg-white p-6 rounded-[2.5rem] shadow-xl flex flex-col items-center gap-3 active:scale-95 text-black">
-                    <div className="bg-gray-700 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg"><MessageSquare size={32} /></div>
-                    <span className="font-black text-xs uppercase">SÖZÜNÜ İLET</span>
+
+                  <button onClick={() => setActiveTab('iletisim')} className="relative overflow-hidden bg-white p-5 rounded-3xl shadow-2xl flex items-center justify-between active:scale-95 transition-all group border-2 border-gray-100">
+                    <div className="flex items-center gap-4 relative z-10">
+                      <div className="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 group-hover:scale-110 group-hover:bg-gray-100 transition-transform duration-300 shadow-sm">
+                        <MessageSquare size={26} className="text-gray-900" />
+                      </div>
+                      <div className="flex flex-col items-start">
+                        <span className="font-black text-[15px] uppercase tracking-widest text-black">SÖZÜNÜ İLET</span>
+                        <span className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.2em] mt-0.5">Doğrudan Bize Ulaşın</span>
+                      </div>
+                    </div>
+                    <div className="relative z-10 bg-gray-50 border border-gray-200 p-2.5 rounded-full group-hover:bg-red-600 transition-colors duration-300 shadow-inner">
+                        <ArrowRight size={18} className="text-gray-400 group-hover:text-white" />
+                    </div>
                   </button>
                 </div>
               </div>
             )}
 
-            {activeTab === 'vaatler' && (
-              <div className="p-4 space-y-6 animate-in slide-in-from-right-10 duration-500 text-black pb-24">
-                {!selectedCategory ? (
-                  <>
-                    <h2 className="font-black text-2xl uppercase italic text-center border-b-4 border-red-600 inline-block mx-auto w-full pb-2">Gelecek Vizyonumuz</h2>
-                    
-                    {/* MECLİS MODULE INTEGRATED INTO VİZYON */}
-                    <div className="bg-gray-900 rounded-[2.5rem] p-8 shadow-2xl border-b-[12px] border-red-600 mb-6 text-white mt-6">
-                      <div className="flex items-center gap-3 mb-4 text-red-500">
-                        <Award size={24} />
-                        <span className="font-black text-[10px] uppercase tracking-widest text-white">Dijital Meclis | Haftanın Önergesi</span>
-                      </div>
-                      <h3 className="font-black text-lg leading-tight mb-4 uppercase">Sığınmacıların Şehir Merkezindeki Ticari Faaliyetlerinin Sınırlandırılması</h3>
-                      
-                      {meclisVote ? (
-                        <div className="mt-6 animate-in fade-in">
-                          <p className="text-xs text-gray-300 mb-4 leading-relaxed italic">
-                            "Oyunuz kaydedildi. Osmaniye halkının kararı aşağıdadır."
-                          </p>
-                          <div className="space-y-4">
-                            <div>
-                              <div className="flex justify-between text-xs font-black uppercase mb-1">
-                                <span className="text-green-400">Kabul</span>
-                                <span>%{Math.round((meclisResults.evet / (meclisResults.evet + meclisResults.hayir)) * 100)}</span>
-                              </div>
-                              <div className="h-3 w-full bg-white/10 rounded-full overflow-hidden">
-                                <div className="h-full bg-green-500 transition-all duration-1000" style={{ width: `${(meclisResults.evet / (meclisResults.evet + meclisResults.hayir)) * 100}%` }}></div>
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-xs font-black uppercase mb-1">
-                                <span className="text-red-400">Red</span>
-                                <span>%{Math.round((meclisResults.hayir / (meclisResults.evet + meclisResults.hayir)) * 100)}</span>
-                              </div>
-                              <div className="h-3 w-full bg-white/10 rounded-full overflow-hidden">
-                                <div className="h-full bg-red-500 transition-all duration-1000" style={{ width: `${(meclisResults.hayir / (meclisResults.evet + meclisResults.hayir)) * 100}%` }}></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <p className="text-xs text-gray-400 mb-6 leading-relaxed">
-                            Meclis'te bu konuda bir kanun teklifi verilse, Osmaniye'nin çıkarı için oyunuz ne olurdu?
-                          </p>
-                          <div className="grid grid-cols-2 gap-4 relative z-[100]">
-                            <button type="button" onPointerDown={(e) => { e.stopPropagation(); handleMeclisVoteSubmit('evet'); }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMeclisVoteSubmit('evet'); }} className="py-4 rounded-2xl font-black uppercase text-xs transition-all bg-white/10 text-white border border-white/20 active:scale-95 cursor-pointer pointer-events-auto">Kabul</button>
-                            <button type="button" onPointerDown={(e) => { e.stopPropagation(); handleMeclisVoteSubmit('hayir'); }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMeclisVoteSubmit('hayir'); }} className="py-4 rounded-2xl font-black uppercase text-xs transition-all bg-white/10 text-white border border-white/20 active:scale-95 cursor-pointer pointer-events-auto">Red</button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    <h3 className="font-black text-xl uppercase italic text-center mt-8 mb-4">Projeler</h3>
-                    <div className="grid grid-cols-2 gap-4 pt-2">
-                      {categories.map(cat => (
-                        <button key={cat.id} onClick={() => setSelectedCategory(cat)} className="bg-white p-6 rounded-[2rem] shadow-lg flex flex-col items-center gap-4 active:scale-95 text-black">
-                          <span className="text-5xl">{cat.icon}</span><span className="font-black text-[10px] uppercase">{cat.title}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <div className="space-y-6 animate-in fade-in duration-300 pb-10 text-left">
-                    <button onClick={() => {setSelectedCategory(null); setExpandedPromise(null);}} className="font-bold text-gray-500 flex items-center gap-2 text-xs uppercase text-black"><ChevronRight className="rotate-180" size={16}/> Dön</button>
-                    <div className={`${selectedCategory.color} p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden`}><h2 className="text-3xl font-black uppercase italic pr-12">{selectedCategory.title}</h2></div>
-                    <div className="bg-white rounded-[2.5rem] p-6 shadow-md border-2 border-red-100 text-black">
-                      <h3 className="font-black text-red-600 mb-6 uppercase text-sm italic border-l-4 border-red-600 pl-3">Vaatler</h3>
-                      <div className="space-y-3">
-                        {selectedCategory.promises.map((p: any, i: number) => (
-                          <div key={i} className="border-b border-gray-50 last:border-0 pb-3">
-                            <button onClick={() => setExpandedPromise(expandedPromise === i ? null : i)} className="w-full flex items-center justify-between text-left">
-                              <div className="flex gap-4 items-center"><span className="bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black">{i+1}</span><span className={`text-sm font-bold ${expandedPromise === i ? 'text-red-600' : 'text-gray-800'}`}>{p.title}</span></div>
-                              <div className="flex gap-3 items-center">
-                                {expandedPromise === i && <Volume2 onClick={(e) => { e.stopPropagation(); speakText(p.desc); }} size={20} className="text-red-600 active:scale-90" />}
-                                <ChevronDown size={16} className={`${expandedPromise === i ? 'rotate-180 text-red-600' : ''}`} />
-                              </div>
-                            </button>
-                            {expandedPromise === i && <div className="mt-3 pl-10 text-xs text-gray-700 animate-in fade-in">{p.desc}</div>}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="bg-gray-900 rounded-[3rem] p-8 text-white border-b-[12px] border-red-600 shadow-2xl mt-6 border-2 border-white/10">
-                      <div className="flex items-center gap-4 mb-6"><MessageCircle className="text-red-500" size={32} /><h3 className="font-black text-2xl uppercase italic leading-none">Bu Vizyona Sözüm Var</h3></div>
-                      <form onSubmit={handleIdeaSubmit} className="space-y-4">
-                        <textarea value={citizenIdea} onChange={(e) => setCitizenIdea(e.target.value)} disabled={sentCategories.includes(selectedCategory.id)} placeholder={sentCategories.includes(selectedCategory.id) ? "Sözünüzü aldık!" : "Fikriniz..."} className="w-full bg-white/5 border-2 border-white/10 rounded-3xl p-5 text-white focus:outline-none focus:border-red-500 min-h-[140px] text-sm disabled:opacity-50" />
-                        <button type="submit" disabled={sentCategories.includes(selectedCategory.id)} className={`w-full py-5 rounded-2xl font-black uppercase shadow-xl ${sentCategories.includes(selectedCategory.id) ? 'bg-green-600' : 'bg-red-600 active:scale-95'}`}>{sentCategories.includes(selectedCategory.id) ? "İletildi" : "Gönder"}</button>
-                      </form>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
 
             {activeTab === 'saha' && (
               <div className="p-4 animate-in slide-in-from-bottom-10 duration-500 pb-20 text-black">
@@ -1208,14 +1221,60 @@ export default function App() {
       )}
 
       {showGoalsModal && (
-        <div className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm p-6 flex items-center justify-center text-black">
-          <div className="bg-white rounded-[3rem] p-8 shadow-2xl w-full max-w-lg relative text-left border-t-8 border-red-600">
-            <h2 className="font-black text-2xl uppercase italic border-b-2 border-red-100 pb-4 mb-6">MECLİS HEDEFLERİM</h2>
-            <div className="space-y-4">
-              <div className="bg-red-50 p-4 rounded-2xl border-l-4 border-red-600 text-black"><h4 className="font-black text-sm uppercase">1. YERLİ İSTİHDAM YASASI</h4></div>
-              <div className="bg-blue-50 p-4 rounded-2xl border-l-4 border-blue-600 text-black"><h4 className="font-black text-sm uppercase">2. TARIMSAL MARKALAŞMA</h4></div>
+        <div className="fixed inset-0 z-[3000] bg-gray-950/80 backdrop-blur-md p-4 flex items-center justify-center animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2rem] w-full max-w-lg shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-gray-900 to-black p-6 relative flex-shrink-0">
+              <div className="absolute inset-0 bg-[url('/pattern.png')] opacity-10 mix-blend-overlay"></div>
+              <button onClick={() => setShowGoalsModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors z-10"><X size={24} /></button>
+              <div className="relative z-10 flex items-center gap-4">
+                <div className="bg-red-600 p-3 rounded-2xl shadow-lg shadow-red-600/30">
+                  <Target size={28} className="text-white" />
+                </div>
+                <div>
+                  <h2 className="font-black text-2xl uppercase tracking-widest text-white leading-none mb-1">MECLİS HEDEFLERİM</h2>
+                  <p className="text-red-400 text-[11px] font-bold tracking-[0.2em] uppercase">Projeler ve Kanun Teklifleri</p>
+                </div>
+              </div>
             </div>
-            <button onClick={() => setShowGoalsModal(false)} className="mt-8 bg-gray-900 text-white w-full py-4 rounded-full font-black uppercase text-xs shadow-lg text-white">KAPAT</button>
+            
+            {/* Scrollable Content */}
+            <div className="p-5 overflow-y-auto bg-gray-50 flex-1">
+              <div className="space-y-3">
+                
+                {[
+                  { title: "YERLİ İSTİHDAM YASASI", desc: "Bölgesel kalkınma için yerel iş gücünü önceleyen istihdam teşvikleri ve yasal düzenlemeler." },
+                  { title: "TARIMSAL MARKALAŞMA", desc: "Osmaniye fıstığı ve zeytini başta olmak üzere yöresel ürünlere uluslararası patent alınması." },
+                  { title: "SIĞINMACILARIN DÖNÜŞÜ", desc: "Kaçak ve sığınmacıların hukuki çerçevede ülkelerine gönderilmesi için yerel ve ulusal düzeyde çalışmalar." },
+                  { title: "GÜVENLİ SOKAKLAR", desc: "Suç oranlarını sıfıra indirmek için teknoloji destekli akıllı şehir güvenlik sistemlerinin entegrasyonu." },
+                  { title: "EĞİTİMDE FIRSAT EŞİTLİĞİ", desc: "Tüm dezavantajlı mahallelere ücretsiz teknoloji, yazılım ve bilim atölyeleri kurulması." }
+                ].map((goal, idx) => (
+                  <div key={idx} className="group bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-red-100 transition-all flex gap-4">
+                    <div className="flex-shrink-0 mt-1">
+                      <div className="w-10 h-10 rounded-full bg-gray-50 border-2 border-gray-100 flex items-center justify-center font-black text-gray-400 group-hover:bg-red-600 group-hover:text-white group-hover:border-red-600 transition-colors">
+                        {idx + 1}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-black text-[14px] uppercase tracking-wider text-gray-900 group-hover:text-red-600 transition-colors mb-1.5 flex items-center gap-2">
+                        {goal.title}
+                      </h4>
+                      <p className="text-[12px] text-gray-500 font-medium leading-relaxed">
+                        {goal.desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="p-4 bg-white border-t border-gray-100 flex-shrink-0">
+              <button onClick={() => setShowGoalsModal(false)} className="w-full bg-gray-900 hover:bg-black text-white py-4 rounded-xl font-black uppercase text-[13px] tracking-[0.2em] transition-colors shadow-lg active:scale-[0.98]">
+                KAPAT
+              </button>
+            </div>
           </div>
         </div>
       )}
