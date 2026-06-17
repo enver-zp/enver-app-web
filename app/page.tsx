@@ -804,11 +804,6 @@ export default function App() {
                               onTouchStart={(e) => {
                                   e.stopPropagation();
                                   e.currentTarget.setAttribute('data-touchstart', e.touches[0].clientX.toString());
-                                  e.currentTarget.setAttribute('data-swiping', 'false');
-                              }}
-                              onTouchMove={(e) => {
-                                  e.stopPropagation();
-                                  e.currentTarget.setAttribute('data-swiping', 'true');
                               }}
                               onTouchEnd={(e) => {
                                   e.stopPropagation();
@@ -817,16 +812,13 @@ export default function App() {
                                   const startX = parseFloat(startStr);
                                   const endX = e.changedTouches[0].clientX;
                                   const diff = startX - endX;
-                                  if (Math.abs(diff) > 20) {
+                                  if (Math.abs(diff) > 40) {
                                       try { playPopSound(); } catch(err){}
                                       if (diff > 0) {
                                           setFrontCardIndex((prev) => (prev + 1) % infoImages.length);
                                       } else {
                                           setFrontCardIndex((prev) => (prev === 0 ? infoImages.length - 1 : prev - 1));
                                       }
-                                      setTimeout(() => e.currentTarget.setAttribute('data-swiping', 'false'), 50);
-                                  } else {
-                                      e.currentTarget.setAttribute('data-swiping', 'false');
                                   }
                               }}
                           >
@@ -852,16 +844,13 @@ export default function App() {
                                     <div 
                                         key={img}
                                         className={`absolute ${isFront ? 'w-[75%] h-72' : 'w-[70%] h-64'} rounded-3xl overflow-hidden shadow-2xl border-4 border-white cursor-pointer transition-all duration-500 ${transformClass} ${zIndex}`}
-                                        onClick={(e) => {
-                                            const isSwiping = e.currentTarget.parentElement?.getAttribute('data-swiping') === 'true';
-                                            if (isSwiping) return;
-                                            
+                                        onClick={() => {
                                             if (isFront) {
                                                 setSelectedImage(img);
-                                                try { playPopSound(); } catch(err){}
+                                                try { playPopSound(); } catch(e){}
                                             } else {
                                                 setFrontCardIndex(idx);
-                                                try { playPopSound(); } catch(err){}
+                                                try { playPopSound(); } catch(e){}
                                             }
                                         }}
                                     >
