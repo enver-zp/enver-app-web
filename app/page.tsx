@@ -597,8 +597,8 @@ export default function App() {
               <button onClick={toggleNotifications} className={`transition-all ${notificationsEnabled ? 'text-red-600' : 'text-gray-400'}`}>
                 <Bell size={22} fill={notificationsEnabled ? "currentColor" : "none"} />
               </button>
-              <div onClick={() => { setSelectedImage('/enver-profil.png'); try{ playPopSound(); }catch(e){} }} className="w-10 h-10 rounded-full border-2 border-red-600 overflow-hidden bg-gray-200 shadow-md cursor-pointer active:scale-90 transition-transform">
-                <img src="/enver-profil.png" className="w-full h-full object-cover scale-110 clickable-img" onContextMenu={preventActions} alt="Portre" style={{ objectPosition: 'center 15%' }} />
+              <div className="w-10 h-10 rounded-full border-2 border-red-600 overflow-hidden bg-gray-200 shadow-md pointer-events-none select-none">
+                <img src="/enver-profil.png" className="w-full h-full object-cover scale-110" onContextMenu={preventActions} onDragStart={preventActions} alt="Portre" style={{ objectPosition: 'center 15%', WebkitTouchCallout: 'none' }} />
               </div>
             </div>
           </header>
@@ -608,8 +608,8 @@ export default function App() {
               <div className="animate-in fade-in duration-500 pb-10">
                 <div className="p-4 pt-6">
                     {/* Header Image */}
-                    <div onClick={() => { setSelectedImage('/enver-kapak.png'); try{ playPopSound(); }catch(e){} }} className="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 relative overflow-hidden h-[280px] cursor-pointer active:scale-95 transition-transform border-2 border-red-100">
-                        <img src="/enver-kapak.png" className="h-full w-full object-cover clickable-img" onContextMenu={preventActions} alt="Kapak" style={{ objectPosition: 'center 20%' }} />
+                    <div className="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 relative overflow-hidden h-[280px] border-2 border-red-100 pointer-events-none select-none">
+                        <img src="/enver-kapak.png" className="h-full w-full object-cover" onContextMenu={preventActions} onDragStart={preventActions} alt="Kapak" style={{ objectPosition: 'center 20%', WebkitTouchCallout: 'none' }} />
                     </div>
                     <div onClick={() => setShowBioModal(true)} className="mt-2 text-center text-black">
                         <span className="text-[10px] font-black text-red-600 uppercase tracking-widest cursor-pointer hover:underline text-black">ENVER ERDOĞAN KİMDİR?</span>
@@ -767,7 +767,7 @@ export default function App() {
                                       className="w-full bg-red-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all mb-4 border border-red-500"
                                     >
                                       <Play size={16} fill="white" />
-                                      MERKEZ İNFOGRAFİKLERİNİ İNCELE
+                                      VİZYONU İNCELE
                                     </button>
                                 )}
                                 
@@ -791,7 +791,7 @@ export default function App() {
                     <div className="w-full max-w-lg mb-12 text-black text-left mt-6 px-4">
                         <h2 className="font-black text-2xl uppercase italic text-center mb-8 border-b-4 border-red-600 inline-block w-full pb-2">VİZYON İNFOGRAFİKLERİ</h2>
                         
-                        <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
+                        <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x" onTouchStart={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
                            {infoCategories.map(cat => (
                              <button key={cat} onClick={() => { setInfographicCategory(cat); setFrontCardIndex(0); try{ playPopSound(); }catch(e){} }} className={`snap-start whitespace-nowrap px-6 py-3 rounded-full font-black text-[10px] tracking-widest uppercase transition-all shadow-md active:scale-95 border-2 ${infographicCategory === cat ? 'bg-red-600 text-white border-red-600' : 'bg-white text-gray-500 border-gray-100 hover:border-red-200'}`}>
                                {cat}
@@ -805,6 +805,11 @@ export default function App() {
                               onTouchStart={(e) => {
                                   e.stopPropagation();
                                   e.currentTarget.setAttribute('data-touchstart', e.touches[0].clientX.toString());
+                                  e.currentTarget.setAttribute('data-swiping', 'false');
+                              }}
+                              onTouchMove={(e) => {
+                                  e.stopPropagation();
+                                  e.currentTarget.setAttribute('data-swiping', 'true');
                               }}
                               onTouchEnd={(e) => {
                                   e.stopPropagation();
@@ -813,13 +818,16 @@ export default function App() {
                                   const startX = parseFloat(startStr);
                                   const endX = e.changedTouches[0].clientX;
                                   const diff = startX - endX;
-                                  if (Math.abs(diff) > 40) {
+                                  if (Math.abs(diff) > 20) {
                                       try { playPopSound(); } catch(err){}
                                       if (diff > 0) {
                                           setFrontCardIndex((prev) => (prev + 1) % infoImages.length);
                                       } else {
                                           setFrontCardIndex((prev) => (prev === 0 ? infoImages.length - 1 : prev - 1));
                                       }
+                                      setTimeout(() => e.currentTarget.setAttribute('data-swiping', 'false'), 50);
+                                  } else {
+                                      e.currentTarget.setAttribute('data-swiping', 'false');
                                   }
                               }}
                           >
@@ -845,13 +853,16 @@ export default function App() {
                                     <div 
                                         key={img}
                                         className={`absolute ${isFront ? 'w-[75%] h-72' : 'w-[70%] h-64'} rounded-3xl overflow-hidden shadow-2xl border-4 border-white cursor-pointer transition-all duration-500 ${transformClass} ${zIndex}`}
-                                        onClick={() => {
+                                        onClick={(e) => {
+                                            const isSwiping = e.currentTarget.parentElement?.getAttribute('data-swiping') === 'true';
+                                            if (isSwiping) return;
+                                            
                                             if (isFront) {
                                                 setSelectedImage(img);
-                                                try { playPopSound(); } catch(e){}
+                                                try { playPopSound(); } catch(err){}
                                             } else {
                                                 setFrontCardIndex(idx);
-                                                try { playPopSound(); } catch(e){}
+                                                try { playPopSound(); } catch(err){}
                                             }
                                         }}
                                     >
