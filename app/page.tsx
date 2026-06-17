@@ -49,21 +49,27 @@ const marqueeMessages = [
 
 const tabOrder = ['home', 'medya', 'saha', 'gonullu', 'iletisim'];
 
+let sharedAudioCtx: any = null;
 const playPopSound = () => {
   if (typeof window === 'undefined') return;
   try {
-    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
+    if (!sharedAudioCtx) {
+      sharedAudioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    if (sharedAudioCtx.state === 'suspended') {
+      sharedAudioCtx.resume();
+    }
+    const oscillator = sharedAudioCtx.createOscillator();
+    const gainNode = sharedAudioCtx.createGain();
     oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
-    gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+    oscillator.frequency.setValueAtTime(800, sharedAudioCtx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(40, sharedAudioCtx.currentTime + 0.1);
+    gainNode.gain.setValueAtTime(0.5, sharedAudioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, sharedAudioCtx.currentTime + 0.1);
     oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
+    gainNode.connect(sharedAudioCtx.destination);
     oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 0.1);
+    oscillator.stop(sharedAudioCtx.currentTime + 0.1);
   } catch(e) {}
 };
 
