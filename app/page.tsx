@@ -143,7 +143,7 @@ export default function App() {
     
     setSelectedImage(currentGallery[newIndex]);
     if (!selectedImage.includes('merkez')) setFrontCardIndex(newIndex);
-    try { new Audio('/pop.mp3').play().catch(()=>console.log('Audio play ignored')); } catch(e){}
+    try { playPopSound(); } catch(e){}
   };
 
   const handleImageTouchEnd = (e: React.TouchEvent) => {
@@ -152,11 +152,9 @@ export default function App() {
     const diff = imageTouchStartX - touchEndX;
     if (diff > 50) {
         navigateImage(1);
-        try { playPopSound(); } catch(e){}
     }
     else if (diff < -50) {
         navigateImage(-1);
-        try { playPopSound(); } catch(e){}
     }
     setImageTouchStartX(null);
   };
@@ -597,8 +595,8 @@ export default function App() {
               <button onClick={toggleNotifications} className={`transition-all ${notificationsEnabled ? 'text-red-600' : 'text-gray-400'}`}>
                 <Bell size={22} fill={notificationsEnabled ? "currentColor" : "none"} />
               </button>
-              <div className="w-10 h-10 rounded-full border-2 border-red-600 overflow-hidden bg-gray-200 shadow-md pointer-events-none select-none">
-                <img src="/enver-profil.png" className="w-full h-full object-cover scale-110" onContextMenu={preventActions} onDragStart={preventActions} alt="Portre" style={{ objectPosition: 'center 15%', WebkitTouchCallout: 'none' }} />
+              <div onClick={() => { setShowBioModal(true); try{ playPopSound(); }catch(e){} }} className="w-10 h-10 rounded-full border-2 border-red-600 overflow-hidden bg-gray-200 shadow-md cursor-pointer active:scale-90 transition-transform select-none">
+                <img src="/enver-profil.png" className="w-full h-full object-cover scale-110" onContextMenu={preventActions} onDragStart={preventActions} alt="Portre" style={{ objectPosition: 'center 15%', WebkitTouchCallout: 'none', pointerEvents: 'none' }} />
               </div>
             </div>
           </header>
@@ -608,8 +606,8 @@ export default function App() {
               <div className="animate-in fade-in duration-500 pb-10">
                 <div className="p-4 pt-6">
                     {/* Header Image */}
-                    <div className="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 relative overflow-hidden h-[280px] border-2 border-red-100 pointer-events-none select-none">
-                        <img src="/enver-kapak.png" className="h-full w-full object-cover" onContextMenu={preventActions} onDragStart={preventActions} alt="Kapak" style={{ objectPosition: 'center 20%', WebkitTouchCallout: 'none' }} />
+                    <div onClick={() => { setShowBioModal(true); try{ playPopSound(); }catch(e){} }} className="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 relative overflow-hidden h-[280px] cursor-pointer active:scale-95 transition-transform border-2 border-red-100 select-none">
+                        <img src="/enver-kapak.png" className="h-full w-full object-cover" onContextMenu={preventActions} onDragStart={preventActions} alt="Kapak" style={{ objectPosition: 'center 20%', WebkitTouchCallout: 'none', pointerEvents: 'none' }} />
                     </div>
                     <div onClick={() => setShowBioModal(true)} className="mt-2 text-center text-black">
                         <span className="text-[10px] font-black text-red-600 uppercase tracking-widest cursor-pointer hover:underline text-black">ENVER ERDOĞAN KİMDİR?</span>
@@ -1193,13 +1191,13 @@ export default function App() {
           {(selectedImage.includes('/info') || selectedImage.includes('merkez')) && (
             <>
               <button 
-                onClick={(e) => { e.stopPropagation(); try { playPopSound(); } catch(e){} navigateImage(-1); }}
+                onClick={(e) => { e.stopPropagation(); navigateImage(-1); }}
                 className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-red-600 transition-colors z-[2020]"
               >
                 <ChevronRight size={32} className="rotate-180" />
               </button>
               <button 
-                onClick={(e) => { e.stopPropagation(); try { playPopSound(); } catch(e){} navigateImage(1); }}
+                onClick={(e) => { e.stopPropagation(); navigateImage(1); }}
                 className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-red-600 transition-colors z-[2020]"
               >
                 <ChevronRight size={32} />
