@@ -1186,6 +1186,7 @@ export default function App() {
           onContextMenu={preventActions}
           onTouchStart={(e) => setImageTouchStartX(e.targetTouches[0].clientX)}
           onTouchEnd={handleImageTouchEnd}
+          style={{ touchAction: selectedImage === '/zafer-muhur.png' ? 'pinch-zoom' : 'none' }}
         >
           <button className="absolute top-6 right-6 text-white hover:text-red-500 bg-white/10 p-3 rounded-full shadow-xl z-[2010]"><X size={28} /></button>
           
@@ -1207,7 +1208,7 @@ export default function App() {
           )}
 
           <div className="relative w-full max-w-4xl max-h-[85vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-            <img src={selectedImage} className={`max-w-full max-h-full object-contain rounded-3xl shadow-2xl border-4 border-white/20 clickable-img ${(selectedImage === '/enver-profil.png' || selectedImage === '/enver-kapak.png') ? 'pointer-events-none' : ''}`} onContextMenu={preventActions} onDragStart={preventActions} alt="Lightbox" />
+            <img src={selectedImage} className={`max-w-full max-h-full object-contain rounded-3xl shadow-2xl border-4 border-white/20 clickable-img ${selectedImage !== '/zafer-muhur.png' ? 'pointer-events-none' : ''}`} onContextMenu={preventActions} onDragStart={preventActions} alt="Lightbox" style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none' }} />
             {(!selectedImage.includes('/info') && !selectedImage.includes('merkez')) && (
                 <div onClick={handleWatermarkClick} className="absolute bottom-3 right-3 bg-gray-950/95 backdrop-blur-sm px-3.5 py-1.5 rounded-full flex items-center gap-2 shadow-2xl border border-white/10 cursor-pointer active:scale-95 transition-all clickable-img">
                     <img src="/zafer-logo.png" className="h-4 w-auto no-drag" alt="Zafer" /><div className="flex flex-col text-left text-white"><span className="font-marka text-[11px] tracking-tight uppercase leading-tight"><span className="text-red-500">ENVER</span><span className="text-white"> ERDOĞAN</span></span><span className="text-white/80 text-[7px] font-black uppercase whitespace-nowrap">Zafer Partisi Osmaniye Milletvekili Aday Adayı</span></div><ExternalLink size={10} className="text-white/30 ml-1 text-white" />
